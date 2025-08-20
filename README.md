@@ -24,6 +24,8 @@ A GraphQL-based backend service for tracking personal movie experiences, built w
 
 ## Quick Start
 
+> **🚀 Live Demo:** [Coming Soon - Railway Deployment]
+
 ### Prerequisites
 - Java 17 or higher
 - Gradle 8.x
