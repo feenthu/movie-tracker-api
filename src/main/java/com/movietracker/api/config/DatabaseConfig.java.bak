@@ -1,0 +1,23 @@
+package com.movietracker.api.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+
+@Configuration
+@Profile("prod")
+public class DatabaseConfig {
+
+    @Bean
+    public String convertedDatabaseUrl() {
+        String databaseUrl = System.getenv("DATABASE_URL");
+        if (databaseUrl != null && databaseUrl.startsWith("postgresql://")) {
+            // Convert Railway's postgresql:// URL to JDBC format
+            String jdbcUrl = databaseUrl.replace("postgresql://", "jdbc:postgresql://");
+            System.setProperty("converted.database.url", jdbcUrl);
+            return jdbcUrl;
+        }
+        return databaseUrl;
+    }
+}

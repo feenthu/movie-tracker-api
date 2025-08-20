@@ -3,10 +3,15 @@ spring:
     name: MovieTrackerAPI
   
   datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD}
+    # Use Railway's provided database URL but ensure JDBC format
+    url: ${JDBC_DATABASE_URL:${DATABASE_URL:jdbc:h2:mem:devdb}}
+    username: ${DATABASE_USERNAME:sa}
+    password: ${DATABASE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
   
   jpa:
     hibernate:
