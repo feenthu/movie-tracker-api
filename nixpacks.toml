@@ -1,8 +1,8 @@
 [phases.build]
-cmds = ["./gradlew clean build -x test"]
+cmds = ["./gradlew clean bootJar -x test"]
 
 [phases.start]
-cmd = "java -Dspring.profiles.active=prod -Dserver.port=$PORT -jar build/libs/MovieTrackerAPI-0.0.1-SNAPSHOT.jar"
+cmd = "java -Dspring.profiles.active=prod -Dserver.port=$PORT -jar build/libs/*.jar"
 
 [variables]
 GRADLE_OPTS = "-Xmx2g -Dorg.gradle.daemon=false"
