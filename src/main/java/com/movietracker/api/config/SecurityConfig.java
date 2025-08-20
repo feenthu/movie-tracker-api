@@ -36,9 +36,11 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 // Public endpoints
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/health").permitAll()
+                .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/graphql").permitAll()
                 .requestMatchers("/graphiql").permitAll()
-                .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/h2-console/**").permitAll() // For H2 console in testing
                 // All other requests require authentication
                 .anyRequest().authenticated()

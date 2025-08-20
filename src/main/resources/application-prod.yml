@@ -71,3 +71,17 @@ server:
   port: ${PORT:8080}
   servlet:
     context-path: /
+
+# Actuator configuration for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /
+  endpoint:
+    health:
+      show-details: always
+  health:
+    defaults:
+      enabled: true
