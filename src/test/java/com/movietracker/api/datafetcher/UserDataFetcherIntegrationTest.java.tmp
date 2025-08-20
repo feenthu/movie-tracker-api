@@ -1,0 +1,210 @@
+package com.movietracker.api.datafetcher;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.movietracker.api.entity.User;
+import com.movietracker.api.repository.UserRepository;
+import com.movietracker.api.service.JwtService;
+import com.netflix.graphql.dgs.DgsQueryExecutor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
+class UserDataFetcherIntegrationTest {
+    
+    @Autowired
+    private DgsQueryExecutor dgsQueryExecutor;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private JwtService jwtService;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
+    
+    private User testUser;
+    private String validToken;
+    
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+        
+        // Create test user
+        testUser = new User();
+        testUser.setEmail("test@example.com");
+        testUser.setUsername("testuser");
+        testUser.setPasswordHash(passwordEncoder.encode("password123"));
+        testUser.setFirstName("Test");
+        testUser.setLastName("User");
+        testUser.setIsActive(true);
+        testUser = userRepository.save(testUser);
+        
+        // Generate valid token
+        validToken = jwtService.generateToken(testUser);
+    }
+    
+    @Test
+    void me_WithValidToken_ShouldReturnUserData() {
+        // Given
+        String query = """
+            query Me {
+                me {
+                    id
+                    email
+                    username
+                    firstName
+                    lastName
+                }
+            }
+            """;
+        
+        Map<String, String> headers = Map.of("Authorization", "Bearer " + validToken);
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPathAsObject(
+            query, "data.me", null, headers
+        ).toString();
+        
+        // Then
+        assertNotNull(result);
+        
+        Map<String, Object> user = objectMapper.readValue(result, Map.class);
+        assertEquals(testUser.getId(), user.get("id"));
+        assertEquals("test@example.com", user.get("email"));
+        assertEquals("testuser", user.get("username"));
+        assertEquals("Test", user.get("firstName"));
+        assertEquals("User", user.get("lastName"));
+    }
+    
+    @Test
+    void me_WithoutToken_ShouldReturnError() {
+        // Given
+        String query = """
+            query Me {
+                me {
+                    id
+                    email
+                }
+            }
+            """;
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            query, "errors[0].message"
+        );
+        
+        // Then
+        assertEquals("Authentication required", result);
+    }
+    
+    @Test
+    void me_WithInvalidToken_ShouldReturnError() {
+        // Given
+        String query = """
+            query Me {
+                me {
+                    id
+                    email
+                }
+            }
+            """;
+        
+        Map<String, String> headers = Map.of("Authorization", "Bearer invalid.token.here");
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            query, "errors[0].message", null, headers
+        );
+        
+        // Then
+        assertEquals("Authentication required", result);
+    }
+    
+    @Test
+    void me_WithExpiredToken_ShouldReturnError() {
+        // Given - Create an expired token (this is a simplified test)
+        String query = """
+            query Me {
+                me {
+                    id
+                    email
+                }
+            }
+            """;
+        
+        Map<String, String> headers = Map.of("Authorization", "Bearer expired.token.here");
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            query, "errors[0].message", null, headers
+        );
+        
+        // Then
+        assertEquals("Authentication required", result);
+    }
+    
+    @Test
+    void me_WithMalformedAuthHeader_ShouldReturnError() {
+        // Given
+        String query = """
+            query Me {
+                me {
+                    id
+                    email
+                }
+            }
+            """;
+        
+        Map<String, String> headers = Map.of("Authorization", "InvalidFormat " + validToken);
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            query, "errors[0].message", null, headers
+        );
+        
+        // Then
+        assertEquals("Authentication required", result);
+    }
+    
+    @Test
+    void me_WithNonExistentUser_ShouldReturnError() {
+        // Given - Delete the user but keep using their token
+        userRepository.delete(testUser);
+        
+        String query = """
+            query Me {
+                me {
+                    id
+                    email
+                }
+            }
+            """;
+        
+        Map<String, String> headers = Map.of("Authorization", "Bearer " + validToken);
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            query, "errors[0].message", null, headers
+        );
+        
+        // Then
+        assertEquals("Authentication required", result);
+    }
+}

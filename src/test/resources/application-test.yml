@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: MovieTrackerAPI-Test
+  
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+  
+  h2:
+    console:
+      enabled: true
+
+# Test authentication configuration
+app:
+  auth:
+    local-auth-enabled: true
+    oauth2-enabled: false
+    jwt:
+      secret: testSecretKeyThatIsLongEnoughForHS256AlgorithmTesting
+      expiration-hours: 1
+
+# GraphQL configuration
+dgs:
+  graphql:
+    path: /graphql
+
+# Disable logging for tests
+logging:
+  level:
+    com.movietracker.api: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.security: WARN

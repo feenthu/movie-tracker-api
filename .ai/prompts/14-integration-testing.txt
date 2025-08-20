@@ -1,0 +1,6 @@
+I need to create integration tests for the [feature-name] feature focusing on the GraphQL API.
+
+Please help me implement integration tests using our recording-based approach for:
+- [list key operations]
+
+Let's create the JSON test case files directly in the test-cases/[feature-area]/[operation]/ directory.

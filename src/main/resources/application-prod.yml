@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: MovieTrackerAPI
+  
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update  # Use 'update' for production to preserve data
+    show-sql: false  # Disable SQL logging in production
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+  
+  # Disable H2 console in production
+  h2:
+    console:
+      enabled: false
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope:
+              - user:email
+              - read:user
+
+# Custom authentication configuration
+app:
+  auth:
+    local-auth-enabled: ${LOCAL_AUTH_ENABLED:true}
+    oauth2-enabled: ${OAUTH2_ENABLED:false}
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration-hours: ${JWT_EXPIRATION_HOURS:24}
+
+# GraphQL configuration
+dgs:
+  graphql:
+    path: /graphql
+    graphiql:
+      enabled: ${GRAPHIQL_ENABLED:false}  # Disable in production
+      path: /graphiql
+
+# Production logging
+logging:
+  level:
+    com.movietracker.api: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    org.springframework.security: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Server configuration
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /

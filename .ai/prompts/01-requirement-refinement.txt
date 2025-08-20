@@ -1,0 +1,5 @@
+I need to refine a new feature requirement for our basket service following our AI workflow in .ai/workflow.md.
+
+The high-level requirement is: [brief description of feature]
+
+Please help me refine this into a detailed specification by asking clarifying questions. Once we've gathered enough information, create a specification document following the template in .ai/templates/requirements.md and save it to .requirements/[feature-name]/specification.md.

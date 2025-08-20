@@ -1,0 +1,3 @@
+I need to modify the existing [component name] to add [new functionality] as part of the [feature-name] feature.
+
+Please analyze the current implementation at [file path] and suggest changes that would implement this functionality while maintaining the existing patterns and style. I'll implement these changes directly in the main source files.

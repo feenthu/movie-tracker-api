@@ -1,0 +1,272 @@
+package com.movietracker.api.datafetcher;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.movietracker.api.entity.User;
+import com.movietracker.api.repository.UserRepository;
+import com.netflix.graphql.dgs.DgsQueryExecutor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Transactional
+class AuthenticationDataFetcherIntegrationTest {
+    
+    @Autowired
+    private DgsQueryExecutor dgsQueryExecutor;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
+    
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+    }
+    
+    @Test
+    void register_WithValidInput_ShouldCreateUserAndReturnToken() {
+        // Given
+        String mutation = """
+            mutation Register($input: RegisterInput!) {
+                register(input: $input) {
+                    token
+                    user {
+                        id
+                        email
+                        username
+                        firstName
+                        lastName
+                    }
+                }
+            }
+            """;
+        
+        Map<String, Object> variables = Map.of("input", Map.of(
+            "email", "test@example.com",
+            "username", "testuser",
+            "password", "password123",
+            "firstName", "Test",
+            "lastName", "User"
+        ));
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            mutation, "data.register", variables
+        );
+        
+        // Then
+        assertNotNull(result);
+        
+        // Parse the result
+        Map<String, Object> registerResult = objectMapper.readValue(result, Map.class);
+        
+        assertNotNull(registerResult.get("token"));
+        assertFalse(((String) registerResult.get("token")).isEmpty());
+        
+        Map<String, Object> user = (Map<String, Object>) registerResult.get("user");
+        assertEquals("test@example.com", user.get("email"));
+        assertEquals("testuser", user.get("username"));
+        assertEquals("Test", user.get("firstName"));
+        assertEquals("User", user.get("lastName"));
+        
+        // Verify user was saved to database
+        assertTrue(userRepository.existsByEmail("test@example.com"));
+    }
+    
+    @Test
+    void register_WithDuplicateEmail_ShouldReturnError() {
+        // Given - Create existing user
+        User existingUser = new User();
+        existingUser.setEmail("existing@example.com");
+        existingUser.setUsername("existinguser");
+        existingUser.setPasswordHash(passwordEncoder.encode("password"));
+        existingUser.setIsActive(true);
+        userRepository.save(existingUser);
+        
+        String mutation = """
+            mutation Register($input: RegisterInput!) {
+                register(input: $input) {
+                    token
+                    user {
+                        email
+                    }
+                }
+            }
+            """;
+        
+        Map<String, Object> variables = Map.of("input", Map.of(
+            "email", "existing@example.com",
+            "username", "newuser",
+            "password", "password123"
+        ));
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            mutation, "errors[0].message", variables
+        );
+        
+        // Then
+        assertEquals("Email already exists", result);
+    }
+    
+    @Test
+    void register_WithDuplicateUsername_ShouldReturnError() {
+        // Given - Create existing user
+        User existingUser = new User();
+        existingUser.setEmail("existing@example.com");
+        existingUser.setUsername("existinguser");
+        existingUser.setPasswordHash(passwordEncoder.encode("password"));
+        existingUser.setIsActive(true);
+        userRepository.save(existingUser);
+        
+        String mutation = """
+            mutation Register($input: RegisterInput!) {
+                register(input: $input) {
+                    token
+                    user {
+                        email
+                    }
+                }
+            }
+            """;
+        
+        Map<String, Object> variables = Map.of("input", Map.of(
+            "email", "new@example.com",
+            "username", "existinguser",
+            "password", "password123"
+        ));
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            mutation, "errors[0].message", variables
+        );
+        
+        // Then
+        assertEquals("Username already exists", result);
+    }
+    
+    @Test
+    void login_WithValidCredentials_ShouldReturnToken() {
+        // Given - Create test user
+        User testUser = new User();
+        testUser.setEmail("test@example.com");
+        testUser.setUsername("testuser");
+        testUser.setPasswordHash(passwordEncoder.encode("password123"));
+        testUser.setIsActive(true);
+        userRepository.save(testUser);
+        
+        String mutation = """
+            mutation Login($input: LoginInput!) {
+                login(input: $input) {
+                    token
+                    user {
+                        email
+                        username
+                    }
+                }
+            }
+            """;
+        
+        Map<String, Object> variables = Map.of("input", Map.of(
+            "email", "test@example.com",
+            "password", "password123"
+        ));
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            mutation, "data.login", variables
+        );
+        
+        // Then
+        assertNotNull(result);
+        
+        Map<String, Object> loginResult = objectMapper.readValue(result, Map.class);
+        
+        assertNotNull(loginResult.get("token"));
+        assertFalse(((String) loginResult.get("token")).isEmpty());
+        
+        Map<String, Object> user = (Map<String, Object>) loginResult.get("user");
+        assertEquals("test@example.com", user.get("email"));
+        assertEquals("testuser", user.get("username"));
+    }
+    
+    @Test
+    void login_WithInvalidCredentials_ShouldReturnError() {
+        // Given - Create test user
+        User testUser = new User();
+        testUser.setEmail("test@example.com");
+        testUser.setUsername("testuser");
+        testUser.setPasswordHash(passwordEncoder.encode("password123"));
+        testUser.setIsActive(true);
+        userRepository.save(testUser);
+        
+        String mutation = """
+            mutation Login($input: LoginInput!) {
+                login(input: $input) {
+                    token
+                    user {
+                        email
+                    }
+                }
+            }
+            """;
+        
+        Map<String, Object> variables = Map.of("input", Map.of(
+            "email", "test@example.com",
+            "password", "wrongpassword"
+        ));
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            mutation, "errors[0].message", variables
+        );
+        
+        // Then
+        assertEquals("Invalid credentials", result);
+    }
+    
+    @Test
+    void login_WithNonExistentUser_ShouldReturnError() {
+        // Given
+        String mutation = """
+            mutation Login($input: LoginInput!) {
+                login(input: $input) {
+                    token
+                    user {
+                        email
+                    }
+                }
+            }
+            """;
+        
+        Map<String, Object> variables = Map.of("input", Map.of(
+            "email", "nonexistent@example.com",
+            "password", "password123"
+        ));
+        
+        // When
+        String result = dgsQueryExecutor.executeAndExtractJsonPath(
+            mutation, "errors[0].message", variables
+        );
+        
+        // Then
+        assertEquals("Invalid credentials", result);
+    }
+}

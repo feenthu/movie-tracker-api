@@ -1,0 +1,5 @@
+I'd like to implement the code for the [feature-name] feature based on the implementation plan in .requirements/[feature-name]/implementation-plan.md.
+
+Please help me implement [specific component or step from the plan] directly in the main source directories. Follow our project's coding standards (use var declarations when type can be inferred, use Optional instead of nested null checks, etc.).
+
+No need to create reference implementations in the .requirements directory - let's implement the actual code directly in the project structure.

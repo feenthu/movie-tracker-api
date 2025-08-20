@@ -1,0 +1,9 @@
+Based on the requirement specification in .requirements/[feature-name]/specification.md, I need to create implementation and test plans.
+
+Please analyze the technical feasibility, identify component changes needed, and create two separate plans:
+
+1. A step-by-step implementation plan following the template in .ai/templates/implementation-plan.md. Save this plan to .requirements/[feature-name]/implementation-plan.md.
+
+2. A test plan following the template in .ai/templates/test-plan.md. Save this plan to .requirements/[feature-name]/test-plan.md.
+
+For the implementation plan, focus on high-level steps with minimal code snippets - we'll implement the actual code directly in the main source directories based on this plan, not generate reference code.

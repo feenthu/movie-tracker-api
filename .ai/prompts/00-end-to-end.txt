@@ -1,0 +1,13 @@
+I want to use our AI-assisted development workflow (as defined in .ai/workflow.md) to implement a new feature for our movie tracker api service.
+
+The initial requirement is: "Add user authentication GraphQL mutations"
+
+Let's start with Phase 1: Requirement Refinement. Please ask me clarifying questions to understand this requirement better, and then we'll create a detailed specification using the template in .ai/templates/requirements.md.
+
+Once we complete the specification, we'll move through each phase of the workflow:
+1. Create separate implementation and test plans
+2. Implement the code directly in the main source directories based on the implementation plan
+3. Implement the tests directly in the main test directories based on the test plan
+4. Update documentation
+
+Please save the specification, implementation plan, and test plan in the .requirements/user-authentication-graphql-mutations/ directory with the appropriate structure.

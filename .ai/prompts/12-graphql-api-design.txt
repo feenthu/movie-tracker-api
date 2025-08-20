@@ -1,0 +1,9 @@
+I need to design the GraphQL API for the [feature-name] feature according to our specification.
+
+Please help me define:
+1. The new types needed
+2. Any modifications to existing types
+3. The queries and mutations required
+4. Sample request/response pairs
+
+Follow our existing GraphQL patterns. I'll implement these changes directly in the main source files.

@@ -1,0 +1,8 @@
+I need to design the database changes for the [feature-name] feature.
+
+Based on our implementation plan, please create the SQL migration script that would:
+1. Create any new tables needed
+2. Add any columns to existing tables
+3. Create appropriate indexes and constraints
+
+I'll implement this SQL migration script directly in the main source files.

@@ -1,0 +1,5 @@
+Now that we've implemented the code for [feature-name], I'd like to implement the tests according to the test plan in .requirements/[feature-name]/test-plan.md.
+
+Please help me implement the tests directly in the main test directories. Let's focus on the integration tests first, using our recording-based approach with JSON test cases.
+
+[If applicable] We'll also need to implement some unit tests for the complex business logic in [specific component].

@@ -1,0 +1,124 @@
+scalar Upload
+scalar DateTime
+
+type Query {
+    # User queries
+    me: User
+    
+    # Movie queries  
+    myMovies: [UserMovie!]!
+    movie(id: ID!): Movie
+    searchMovies(query: String!): [Movie!]!
+    
+    # Health check
+    health: String!
+}
+
+type Mutation {
+    # Authentication
+    register(input: RegisterInput!): AuthPayload!
+    login(input: LoginInput!): AuthPayload!
+    
+    # Movie operations
+    addMovie(input: AddMovieInput!): UserMovie!
+    updateUserMovie(id: ID!, input: UpdateUserMovieInput!): UserMovie!
+    deleteUserMovie(id: ID!): Boolean!
+    
+    # Ticket scanning
+    scanTicket(image: Upload!): ScanResult!
+}
+
+# Types
+type User {
+    id: ID!
+    email: String!
+    username: String!
+    firstName: String
+    lastName: String
+    createdAt: DateTime!
+}
+
+type Movie {
+    id: ID!
+    title: String!
+    releaseYear: Int
+    genre: String
+    rating: String
+    runtimeMinutes: Int
+    director: String
+    posterUrl: String
+    plotSummary: String
+}
+type UserMovie {
+    id: ID!
+    user: User!
+    movie: Movie!
+    theater: String
+    seatAssignment: String
+    dateWatched: DateTime!
+    showtime: String
+    ticketPrice: Float
+    personalRating: Int
+    notes: String
+    ticketImageUrl: String
+    createdAt: DateTime!
+}
+
+# Input types
+input RegisterInput {
+    email: String!
+    username: String!
+    password: String!
+    firstName: String
+    lastName: String
+}
+
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+input AddMovieInput {
+    movieTitle: String!
+    releaseYear: Int
+    genre: String
+    rating: String
+    director: String
+    theater: String
+    seatAssignment: String
+    dateWatched: DateTime!
+    showtime: String
+    ticketPrice: Float
+    personalRating: Int
+    notes: String
+}
+
+input UpdateUserMovieInput {
+    theater: String
+    seatAssignment: String
+    personalRating: Int
+    notes: String
+}
+
+# Auth payload
+type AuthPayload {
+    token: String!
+    user: User!
+}
+
+# Ticket scanning
+type ScanResult {
+    success: Boolean!
+    confidence: Float
+    extractedData: TicketData
+    errors: [String!]
+}
+
+type TicketData {
+    movieTitle: String
+    theater: String
+    dateWatched: DateTime
+    showtime: String
+    seatAssignment: String
+    ticketPrice: Float
+}

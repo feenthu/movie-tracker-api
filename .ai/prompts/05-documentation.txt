@@ -1,0 +1,6 @@
+To complete the [feature-name] feature, I need to update documentation.
+
+Please help me with:
+1. Adding proper JavaDoc comments to the code
+2. Creating a sequence diagram that shows the flow of the new feature
+3. Updating any necessary sections in the README.md, including the ubiquitous language section if needed
