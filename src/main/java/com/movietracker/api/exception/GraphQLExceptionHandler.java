@@ -1,7 +1,6 @@
 package com.movietracker.api.exception;
 
 import com.netflix.graphql.dgs.DgsComponent;
-import com.netflix.graphql.dgs.exceptions.DgsDataFetchingException;
 import com.netflix.graphql.types.errors.TypedGraphQLError;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
