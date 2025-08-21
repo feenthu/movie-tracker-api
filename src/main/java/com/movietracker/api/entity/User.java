@@ -26,8 +26,7 @@ public class User {
     @Size(min = 3, max = 50)
     private String username;
     
-    @Column(nullable = false)
-    @NotBlank
+    @Column(nullable = true)  // OAuth users may not have password
     private String passwordHash;
     
     private String firstName;
@@ -60,6 +59,16 @@ public class User {
         this.email = email;
         this.username = username;
         this.passwordHash = passwordHash;
+    }
+    
+    // Constructor for OAuth2 users
+    public User(String email, String username, String provider, String providerId) {
+        this();
+        this.email = email;
+        this.username = username;
+        this.provider = provider;
+        this.providerId = providerId;
+        this.passwordHash = null; // OAuth users don't have passwords
     }
     
     // Getters and Setters

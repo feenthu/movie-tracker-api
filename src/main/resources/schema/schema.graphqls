@@ -19,6 +19,9 @@ type Mutation {
     register(input: RegisterInput!): AuthPayload!
     login(input: LoginInput!): AuthPayload!
     
+    # OAuth Login URLs
+    getOAuth2LoginUrl(provider: OAuth2Provider!): OAuth2LoginUrl!
+    
     # Movie operations
     addMovie(input: AddMovieInput!): UserMovie!
     updateUserMovie(id: ID!, input: UpdateUserMovieInput!): UserMovie!
@@ -121,4 +124,16 @@ type TicketData {
     showtime: String
     seatAssignment: String
     ticketPrice: Float
+}
+
+# OAuth2 Types
+enum OAuth2Provider {
+    GOOGLE
+    FACEBOOK
+    APPLE
+}
+
+type OAuth2LoginUrl {
+    provider: OAuth2Provider!
+    loginUrl: String!
 }
