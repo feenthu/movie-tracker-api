@@ -3,9 +3,9 @@ spring:
     name: MovieTrackerAPI
   
   datasource:
-    # Use Railway's provided database URL but ensure JDBC format
-    url: ${JDBC_DATABASE_URL:${DATABASE_URL:jdbc:h2:mem:devdb}}
-    username: ${DATABASE_USERNAME:sa}
+    # Build JDBC URL from components to avoid parsing issues
+    url: jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:railway}
+    username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
