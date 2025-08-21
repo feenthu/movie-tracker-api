@@ -61,18 +61,22 @@ dgs:
       enabled: ${GRAPHIQL_ENABLED:false}  # Disable in production
       path: /graphiql
 
-# Production logging
+# Production logging - REDUCED to prevent Railway rate limiting
 logging:
   level:
-    com.movietracker.api: DEBUG
-    org.springframework.boot: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: WARN
-    org.hibernate.type.descriptor.sql.BasicBinder: WARN
-    org.springframework.security: DEBUG
-    org.springframework.boot.actuator: DEBUG
+    com.movietracker.api: INFO
+    org.springframework.boot: WARN
+    org.springframework.web: WARN
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.springframework.security: WARN
+    org.springframework.boot.actuator: WARN
+    org.springframework.boot.autoconfigure: WARN
+    org.springframework.context: WARN
+    org.springframework.beans: WARN
+    root: WARN
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{HH:mm:ss} %-5level %logger{20} - %msg%n"
 
 # Server configuration
 server:

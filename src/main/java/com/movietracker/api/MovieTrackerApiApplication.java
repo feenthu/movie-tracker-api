@@ -17,14 +17,8 @@ public class MovieTrackerApiApplication {
 	private static final Logger logger = LoggerFactory.getLogger(MovieTrackerApiApplication.class);
 
 	public static void main(String[] args) {
-		logger.info("Starting Movie Tracker API application...");
-		logger.info("Active profiles: {}", System.getProperty("spring.profiles.active"));
-		logger.info("Port: {}", System.getenv("PORT"));
-		logger.info("Database URL present: {}", System.getenv("DATABASE_URL") != null);
-		logger.info("JWT Secret present: {}", System.getenv("JWT_SECRET") != null);
-		
+		logger.info("Starting Movie Tracker API...");
 		SpringApplication.run(MovieTrackerApiApplication.class, args);
-		logger.info("Movie Tracker API application started successfully!");
 	}
 
 	@Component
@@ -34,12 +28,10 @@ public class MovieTrackerApiApplication {
 		@EventListener
 		public void handleContextRefresh(ContextRefreshedEvent event) {
 			Environment env = event.getApplicationContext().getEnvironment();
-			log.info("=== APPLICATION STARTED SUCCESSFULLY ===");
-			log.info("Server port: {}", env.getProperty("server.port"));
-			log.info("Active profiles: {}", String.join(",", env.getActiveProfiles()));
-			log.info("Health endpoint should be available at /health");
-			log.info("GraphQL endpoint available at /graphql");
-			log.info("==========================================");
+			log.info("=== APPLICATION STARTED ===");
+			log.info("Port: {}", env.getProperty("server.port"));
+			log.info("Health: /health");
+			log.info("GraphQL: /graphql");
 		}
 	}
 }
