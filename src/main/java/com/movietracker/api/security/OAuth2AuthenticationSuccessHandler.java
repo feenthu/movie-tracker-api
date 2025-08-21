@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -16,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 
 @Component
+@ConditionalOnProperty(name = "app.auth.oauth2-enabled", havingValue = "true")
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthenticationService authenticationService;
@@ -26,8 +29,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
     @Autowired
     public OAuth2AuthenticationSuccessHandler(
-            AuthenticationService authenticationService,
-            JwtService jwtService) {
+            @Lazy AuthenticationService authenticationService,
+            @Lazy JwtService jwtService) {
         this.authenticationService = authenticationService;
         this.jwtService = jwtService;
     }

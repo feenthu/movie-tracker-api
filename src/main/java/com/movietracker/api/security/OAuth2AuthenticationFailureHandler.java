@@ -3,6 +3,7 @@ package com.movietracker.api.security;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 
 @Component
+@ConditionalOnProperty(name = "app.auth.oauth2-enabled", havingValue = "true")
 public class OAuth2AuthenticationFailureHandler implements AuthenticationFailureHandler {
 
     @Value("${app.oauth2.redirect-uri:http://localhost:3001/auth/callback}")

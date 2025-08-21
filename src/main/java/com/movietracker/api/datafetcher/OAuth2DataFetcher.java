@@ -6,8 +6,10 @@ import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsMutation;
 import com.netflix.graphql.dgs.InputArgument;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @DgsComponent
+@ConditionalOnProperty(name = "app.auth.oauth2-enabled", havingValue = "true")
 public class OAuth2DataFetcher {
     
     @Value("${app.api-base-url:http://localhost:8081}")

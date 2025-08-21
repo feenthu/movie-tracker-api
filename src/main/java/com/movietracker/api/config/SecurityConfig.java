@@ -4,8 +4,10 @@ import com.movietracker.api.security.JwtAuthenticationFilter;
 import com.movietracker.api.security.OAuth2AuthenticationFailureHandler;
 import com.movietracker.api.security.OAuth2AuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,11 +28,14 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    
+    @Value("${app.auth.oauth2-enabled:false}")
+    private boolean oauth2Enabled;
 
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                         OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
-                         OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler) {
+                         @Autowired(required = false) @Lazy OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
+                         @Autowired(required = false) @Lazy OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
         this.oAuth2AuthenticationFailureHandler = oAuth2AuthenticationFailureHandler;
@@ -38,31 +43,41 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+        HttpSecurity httpSecurity = http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) // Disable for API development
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authz -> authz
-                // Public endpoints
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/health").permitAll()
-                .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/graphql").permitAll()
-                .requestMatchers("/graphiql").permitAll()
-                .requestMatchers("/h2-console/**").permitAll() // For H2 console in testing
-                .requestMatchers("/oauth2/**").permitAll() // OAuth2 endpoints
-                .requestMatchers("/login/oauth2/**").permitAll() // OAuth2 login endpoints
-                // All other requests require authentication
-                .anyRequest().authenticated()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .successHandler(oAuth2AuthenticationSuccessHandler)
-                .failureHandler(oAuth2AuthenticationFailureHandler)
-            )
+            .authorizeHttpRequests(authz -> {
+                authz
+                    // Public endpoints
+                    .requestMatchers("/").permitAll()
+                    .requestMatchers("/health").permitAll()
+                    .requestMatchers("/actuator/health").permitAll()
+                    .requestMatchers("/graphql").permitAll()
+                    .requestMatchers("/graphiql").permitAll()
+                    .requestMatchers("/h2-console/**").permitAll(); // For H2 console in testing
+                    
+                // Add OAuth2 endpoints only if OAuth2 is enabled
+                if (oauth2Enabled) {
+                    authz
+                        .requestMatchers("/oauth2/**").permitAll() // OAuth2 endpoints
+                        .requestMatchers("/login/oauth2/**").permitAll(); // OAuth2 login endpoints
+                }
+                
+                authz.anyRequest().authenticated(); // All other requests require authentication
+            })
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // For H2 console
         
-        return http.build();
+        // Only configure OAuth2 login if enabled and handlers are available
+        if (oauth2Enabled && oAuth2AuthenticationSuccessHandler != null && oAuth2AuthenticationFailureHandler != null) {
+            httpSecurity.oauth2Login(oauth2 -> oauth2
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
+            );
+        }
+        
+        return httpSecurity.build();
     }
     
     @Bean
