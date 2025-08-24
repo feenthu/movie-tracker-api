@@ -18,7 +18,9 @@ public class OAuth2DataFetcher {
     @DgsMutation
     public OAuth2LoginUrl getOAuth2LoginUrl(@InputArgument OAuth2Provider provider) {
         String providerName = provider.name().toLowerCase();
-        String loginUrl = apiBaseUrl + "/oauth2/authorization/" + providerName;
+        
+        // Use new secure OAuth2 flow endpoint with PKCE support
+        String loginUrl = apiBaseUrl + "/oauth2/authorize/" + providerName;
         
         return new OAuth2LoginUrl(provider, loginUrl);
     }
