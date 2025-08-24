@@ -69,7 +69,7 @@ app:
       secret: ${JWT_SECRET}
       expiration-hours: ${JWT_EXPIRATION_HOURS:24}
   oauth2:
-    redirect-uri: ${OAUTH2_REDIRECT_URI:https://your-frontend-domain/auth/callback}
+    redirect-uri: ${OAUTH2_REDIRECT_URI:https://movie-tracker-web-production.up.railway.app/auth/callback}
   api-base-url: ${API_BASE_URL:https://your-api-domain}
 
 # GraphQL configuration

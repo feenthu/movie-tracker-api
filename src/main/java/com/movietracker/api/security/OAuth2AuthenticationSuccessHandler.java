@@ -72,6 +72,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         
         // Debug logging
         System.out.println("OAuth2 Success - Redirecting to: " + targetUrl);
+        System.out.println("OAuth2 Success - User: " + user.getEmail());
+        System.out.println("OAuth2 Success - Registration ID: " + registrationId);
         
         // Clear any existing response content
         response.reset();

@@ -69,6 +69,9 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // For H2 console
         
+        // Disable form login to prevent default /login redirect
+        httpSecurity.formLogin(formLogin -> formLogin.disable());
+        
         // Only configure OAuth2 login if enabled and handlers are available
         if (oauth2Enabled && oAuth2AuthenticationSuccessHandler != null && oAuth2AuthenticationFailureHandler != null) {
             httpSecurity.oauth2Login(oauth2 -> oauth2
