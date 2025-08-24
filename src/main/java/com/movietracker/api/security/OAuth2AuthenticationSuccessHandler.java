@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -40,7 +41,13 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                                        Authentication authentication) throws IOException {
         
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String registrationId = extractRegistrationId(request);
+        
+        // Get registration ID from the OAuth2AuthenticationToken
+        String registrationId = "unknown";
+        if (authentication instanceof OAuth2AuthenticationToken) {
+            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+            registrationId = oauthToken.getAuthorizedClientRegistrationId();
+        }
         
         // Process OAuth2 user and get or create user in our system
         User user = authenticationService.processOAuth2User(oAuth2User, registrationId);
@@ -59,13 +66,5 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                 .build().toUriString();
                 
         response.sendRedirect(targetUrl);
-    }
-    
-    private String extractRegistrationId(HttpServletRequest request) {
-        String requestUri = request.getRequestURI();
-        if (requestUri.contains("/oauth2/authorization/")) {
-            return requestUri.substring(requestUri.lastIndexOf("/") + 1);
-        }
-        return "unknown";
     }
 }
