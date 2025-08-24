@@ -3,6 +3,7 @@ package com.movietracker.api.security;
 import com.movietracker.api.entity.User;
 import com.movietracker.api.service.AuthenticationService;
 import com.movietracker.api.service.JwtService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,16 +58,30 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         // Generate JWT token
         String token = jwtService.generateToken(user);
         
-        // Redirect to frontend with token and user data
+        // Create secure HTTP-only cookies for sensitive data
+        Cookie tokenCookie = new Cookie("auth-token", token);
+        tokenCookie.setHttpOnly(true);
+        tokenCookie.setSecure(true); // HTTPS only
+        tokenCookie.setPath("/");
+        tokenCookie.setMaxAge(24 * 60 * 60); // 24 hours
+        tokenCookie.setSameSite(Cookie.SameSite.LAX);
+        
         String userJson = String.format("{\"id\":\"%s\",\"email\":\"%s\",\"username\":\"%s\"}", 
                 user.getId(), user.getEmail(), user.getUsername());
-        
-        // URL encode the JSON string to handle special characters
         String encodedUserJson = URLEncoder.encode(userJson, StandardCharsets.UTF_8);
         
+        Cookie userCookie = new Cookie("auth-user", encodedUserJson);
+        userCookie.setHttpOnly(false); // Frontend needs to read this
+        userCookie.setSecure(true); // HTTPS only
+        userCookie.setPath("/");
+        userCookie.setMaxAge(24 * 60 * 60); // 24 hours
+        userCookie.setSameSite(Cookie.SameSite.LAX);
+        
+        response.addCookie(tokenCookie);
+        response.addCookie(userCookie);
+        
+        // Redirect to frontend callback without sensitive data in URL
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
-                .queryParam("token", token)
-                .queryParam("user", encodedUserJson)
                 .queryParam("success", "true")
                 .build().toUriString();
         
@@ -75,8 +90,10 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         System.out.println("OAuth2 Success - User: " + user.getEmail());
         System.out.println("OAuth2 Success - Registration ID: " + registrationId);
         
-        // Clear any existing response content
+        // Clear any existing response content and redirect
         response.reset();
+        response.addCookie(tokenCookie); // Re-add cookies after reset
+        response.addCookie(userCookie);
         response.setStatus(HttpServletResponse.SC_FOUND);
         response.setHeader("Location", targetUrl);
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
