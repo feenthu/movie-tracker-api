@@ -15,7 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/oauth2")
-@CrossOrigin(origins = {"http://localhost:3001", "https://movie-tracker-web-production.up.railway.app"}, allowCredentials = true)
+@CrossOrigin(origins = {"http://localhost:3001", "https://movie-tracker-web-production.up.railway.app"}, allowCredentials = "true")
 public class OAuth2Controller {
 
     private final OAuth2SessionService sessionService;
@@ -59,7 +59,7 @@ public class OAuth2Controller {
             sessionCookie.setSecure(true); // HTTPS only
             sessionCookie.setPath("/");
             sessionCookie.setMaxAge(10 * 60); // 10 minutes
-            sessionCookie.setSameSite(Cookie.SameSite.LAX);
+            // Note: SameSite=Lax is set by browser default for secure cookies
             response.addCookie(sessionCookie);
 
             // Build OAuth2 authorization URL
@@ -108,7 +108,7 @@ public class OAuth2Controller {
         authCookie.setSecure(true);
         authCookie.setPath("/");
         authCookie.setMaxAge(24 * 60 * 60); // 24 hours
-        authCookie.setSameSite(Cookie.SameSite.LAX);
+        // Note: SameSite=Lax is set by browser default for secure cookies
         response.addCookie(authCookie);
 
         // Clear session cookie

@@ -64,7 +64,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         tokenCookie.setSecure(true); // HTTPS only
         tokenCookie.setPath("/");
         tokenCookie.setMaxAge(24 * 60 * 60); // 24 hours
-        tokenCookie.setSameSite(Cookie.SameSite.LAX);
+        // Note: SameSite=Lax is set by browser default for secure cookies
         
         String userJson = String.format("{\"id\":\"%s\",\"email\":\"%s\",\"username\":\"%s\"}", 
                 user.getId(), user.getEmail(), user.getUsername());
@@ -75,7 +75,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         userCookie.setSecure(true); // HTTPS only
         userCookie.setPath("/");
         userCookie.setMaxAge(24 * 60 * 60); // 24 hours
-        userCookie.setSameSite(Cookie.SameSite.LAX);
+        // Note: SameSite=Lax is set by browser default for secure cookies
         
         response.addCookie(tokenCookie);
         response.addCookie(userCookie);

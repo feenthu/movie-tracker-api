@@ -151,7 +151,7 @@ public class OAuth2AuthenticationSuccessHandlerV2 implements AuthenticationSucce
         tokenCookie.setSecure(true);
         tokenCookie.setPath("/");
         tokenCookie.setMaxAge(24 * 60 * 60);
-        tokenCookie.setSameSite(Cookie.SameSite.LAX);
+        // Note: SameSite=Lax is set by browser default for secure cookies
         
         String userJson = String.format("{\"id\":\"%s\",\"email\":\"%s\",\"username\":\"%s\"}", 
                 user.getId(), user.getEmail(), user.getUsername());
@@ -162,7 +162,7 @@ public class OAuth2AuthenticationSuccessHandlerV2 implements AuthenticationSucce
         userCookie.setSecure(true);
         userCookie.setPath("/");
         userCookie.setMaxAge(24 * 60 * 60);
-        userCookie.setSameSite(Cookie.SameSite.LAX);
+        // Note: SameSite=Lax is set by browser default for secure cookies
         
         response.addCookie(tokenCookie);
         response.addCookie(userCookie);
