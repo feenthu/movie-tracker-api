@@ -48,9 +48,13 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         // Generate JWT token
         String token = jwtService.generateToken(user);
         
-        // Redirect to frontend with token
+        // Redirect to frontend with token and user data
+        String userJson = String.format("{\"id\":\"%s\",\"email\":\"%s\",\"username\":\"%s\"}", 
+                user.getId(), user.getEmail(), user.getUsername());
+        
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("token", token)
+                .queryParam("user", userJson)
                 .queryParam("success", "true")
                 .build().toUriString();
                 
