@@ -1,5 +1,6 @@
 package com.movietracker.api.service;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.UUID;
@@ -9,6 +10,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@ConditionalOnProperty(name = "app.auth.oauth2-enabled", havingValue = "true", matchIfMissing = false)
 public class OAuth2SessionService {
 
     private final Map<String, OAuth2SessionData> sessions = new ConcurrentHashMap<>();

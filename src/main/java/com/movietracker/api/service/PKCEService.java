@@ -1,5 +1,6 @@
 package com.movietracker.api.service;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -8,6 +9,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 @Service
+@ConditionalOnProperty(name = "app.auth.oauth2-enabled", havingValue = "true", matchIfMissing = false)
 public class PKCEService {
 
     private final SecureRandom secureRandom = new SecureRandom();

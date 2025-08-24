@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -16,12 +17,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/oauth2")
 @CrossOrigin(origins = {"http://localhost:3001", "https://movie-tracker-web-production.up.railway.app"}, allowCredentials = "true")
+@ConditionalOnProperty(name = "app.auth.oauth2-enabled", havingValue = "true", matchIfMissing = false)
 public class OAuth2Controller {
 
     private final OAuth2SessionService sessionService;
     private final PKCEService pkceService;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    @Value("${spring.security.oauth2.client.registration.google.client-id:}")
     private String googleClientId;
 
     @Value("${app.api-base-url:http://localhost:8081}")
