@@ -69,7 +69,15 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                 .queryParam("user", encodedUserJson)
                 .queryParam("success", "true")
                 .build().toUriString();
-                
-        response.sendRedirect(targetUrl);
+        
+        // Debug logging
+        System.out.println("OAuth2 Success - Redirecting to: " + targetUrl);
+        
+        // Clear any existing response content
+        response.reset();
+        response.setStatus(HttpServletResponse.SC_FOUND);
+        response.setHeader("Location", targetUrl);
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.flushBuffer();
     }
 }
