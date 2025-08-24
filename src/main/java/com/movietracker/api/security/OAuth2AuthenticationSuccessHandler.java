@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @ConditionalOnProperty(name = "app.auth.oauth2-enabled", havingValue = "true")
@@ -59,9 +61,12 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String userJson = String.format("{\"id\":\"%s\",\"email\":\"%s\",\"username\":\"%s\"}", 
                 user.getId(), user.getEmail(), user.getUsername());
         
+        // URL encode the JSON string to handle special characters
+        String encodedUserJson = URLEncoder.encode(userJson, StandardCharsets.UTF_8);
+        
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("token", token)
-                .queryParam("user", userJson)
+                .queryParam("user", encodedUserJson)
                 .queryParam("success", "true")
                 .build().toUriString();
                 
