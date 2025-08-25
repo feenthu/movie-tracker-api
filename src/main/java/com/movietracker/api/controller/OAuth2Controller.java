@@ -44,6 +44,11 @@ public class OAuth2Controller {
             @PathVariable String provider, 
             HttpServletResponse response) {
         
+        System.out.println("=== NEW PKCE OAUTH2 FLOW INITIATED ===");
+        System.out.println("Provider: " + provider);
+        System.out.println("Session service available: " + (sessionService != null));
+        System.out.println("PKCE service available: " + (pkceService != null));
+        
         try {
             // Generate PKCE parameters
             PKCEService.PKCEParams pkceParams = pkceService.generatePKCEParams();
