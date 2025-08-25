@@ -46,7 +46,14 @@ public class SecurityConfig {
         HttpSecurity httpSecurity = http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) // Disable for API development
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> {
+                if (oauth2Enabled) {
+                    // OAuth2 needs sessions for authorization requests
+                    session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+                } else {
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                }
+            })
             .authorizeHttpRequests(authz -> {
                 authz
                     // Public endpoints
@@ -77,6 +84,10 @@ public class SecurityConfig {
             httpSecurity.oauth2Login(oauth2 -> oauth2
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler(oAuth2AuthenticationFailureHandler)
+                .authorizationEndpoint(authorization -> 
+                    authorization.baseUri("/oauth2/authorization"))
+                .redirectionEndpoint(redirection -> 
+                    redirection.baseUri("/login/oauth2/code/*"))
             );
         }
         
