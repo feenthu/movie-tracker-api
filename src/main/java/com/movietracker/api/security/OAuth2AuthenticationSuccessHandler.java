@@ -43,17 +43,20 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                        Authentication authentication) throws IOException {
         
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        
-        // Get registration ID from the OAuth2AuthenticationToken
-        String registrationId = "unknown";
-        if (authentication instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-            registrationId = oauthToken.getAuthorizedClientRegistrationId();
-        }
-        
-        // Process OAuth2 user and get or create user in our system
-        User user = authenticationService.processOAuth2User(oAuth2User, registrationId);
+        try {
+            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+            
+            // Get registration ID from the OAuth2AuthenticationToken
+            String registrationId = "unknown";
+            if (authentication instanceof OAuth2AuthenticationToken) {
+                OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+                registrationId = oauthToken.getAuthorizedClientRegistrationId();
+            }
+            
+            System.out.println("OAuth2 Success Handler - Processing authentication for: " + registrationId);
+            
+            // Process OAuth2 user and get or create user in our system
+            User user = authenticationService.processOAuth2User(oAuth2User, registrationId);
         
         // Generate JWT token
         String token = jwtService.generateToken(user);
@@ -98,5 +101,18 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         response.setHeader("Location", targetUrl);
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         response.flushBuffer();
+        
+        } catch (Exception e) {
+            System.err.println("OAuth2 authentication error: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Redirect to frontend with error
+            String errorUrl = UriComponentsBuilder.fromUriString(redirectUri)
+                    .queryParam("success", "false")
+                    .queryParam("error", URLEncoder.encode("Authentication processing failed: " + e.getMessage(), StandardCharsets.UTF_8))
+                    .build().toUriString();
+            
+            response.sendRedirect(errorUrl);
+        }
     }
 }
