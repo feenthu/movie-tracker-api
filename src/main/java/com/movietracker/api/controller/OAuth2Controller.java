@@ -62,11 +62,11 @@ public class OAuth2Controller {
 
             // Set session cookie
             Cookie sessionCookie = new Cookie("oauth2-session", sessionId);
-            sessionCookie.setHttpOnly(false); // Allow JavaScript access for debugging
-            sessionCookie.setSecure(false); // Allow HTTP for Railway debugging
+            sessionCookie.setHttpOnly(true);
+            sessionCookie.setSecure(true); 
             sessionCookie.setPath("/");
             sessionCookie.setMaxAge(10 * 60); // 10 minutes
-            sessionCookie.setDomain(".railway.app"); // Cross-subdomain cookie
+            // Remove domain setting - let browser handle it automatically
             response.addCookie(sessionCookie);
 
             // Build OAuth2 authorization URL
