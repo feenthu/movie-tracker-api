@@ -14,6 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/debug/oauth2")
 @CrossOrigin(origins = {"http://localhost:3001", "https://movie-tracker-web-production.up.railway.app"}, allowCredentials = "true")
+@ConditionalOnProperty(name = "app.auth.oauth2-enabled", havingValue = "true", matchIfMissing = false)
 public class OAuth2DebugController {
 
     private final OAuth2SessionService sessionService;
@@ -28,7 +29,7 @@ public class OAuth2DebugController {
     @Value("${app.api-base-url:http://localhost:8081}")
     private String apiBaseUrl;
 
-    @Autowired(required = false)
+    @Autowired
     public OAuth2DebugController(OAuth2SessionService sessionService, PKCEService pkceService) {
         this.sessionService = sessionService;
         this.pkceService = pkceService;
