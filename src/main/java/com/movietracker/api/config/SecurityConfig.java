@@ -3,6 +3,7 @@ package com.movietracker.api.config;
 import com.movietracker.api.security.JwtAuthenticationFilter;
 import com.movietracker.api.security.OAuth2AuthenticationFailureHandler;
 import com.movietracker.api.security.OAuth2AuthenticationSuccessHandler;
+import com.movietracker.api.security.OAuth2AuthenticationSuccessHandlerV2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final OAuth2AuthenticationSuccessHandlerV2 oAuth2AuthenticationSuccessHandlerV2;
     
     @Value("${app.auth.oauth2-enabled:false}")
     private boolean oauth2Enabled;
@@ -35,10 +37,12 @@ public class SecurityConfig {
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                          @Autowired(required = false) @Lazy OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
-                         @Autowired(required = false) @Lazy OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler) {
+                         @Autowired(required = false) @Lazy OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler,
+                         @Autowired(required = false) @Lazy OAuth2AuthenticationSuccessHandlerV2 oAuth2AuthenticationSuccessHandlerV2) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
         this.oAuth2AuthenticationFailureHandler = oAuth2AuthenticationFailureHandler;
+        this.oAuth2AuthenticationSuccessHandlerV2 = oAuth2AuthenticationSuccessHandlerV2;
     }
 
     @Bean
@@ -80,15 +84,23 @@ public class SecurityConfig {
         httpSecurity.formLogin(formLogin -> formLogin.disable());
         
         // Only configure OAuth2 login if enabled and handlers are available
-        if (oauth2Enabled && oAuth2AuthenticationSuccessHandler != null && oAuth2AuthenticationFailureHandler != null) {
-            httpSecurity.oauth2Login(oauth2 -> oauth2
-                .successHandler(oAuth2AuthenticationSuccessHandler)
-                .failureHandler(oAuth2AuthenticationFailureHandler)
-                .authorizationEndpoint(authorization -> 
-                    authorization.baseUri("/oauth2/authorization"))
-                .redirectionEndpoint(redirection -> 
-                    redirection.baseUri("/login/oauth2/code/*"))
-            );
+        if (oauth2Enabled && oAuth2AuthenticationFailureHandler != null) {
+            // Use V2 handler if available (with session management), fallback to V1 handler
+            var successHandler = oAuth2AuthenticationSuccessHandlerV2 != null ? 
+                oAuth2AuthenticationSuccessHandlerV2 : oAuth2AuthenticationSuccessHandler;
+            
+            if (successHandler != null) {
+                System.out.println("Configuring OAuth2 with handler: " + successHandler.getClass().getSimpleName());
+                
+                httpSecurity.oauth2Login(oauth2 -> oauth2
+                    .successHandler(successHandler)
+                    .failureHandler(oAuth2AuthenticationFailureHandler)
+                    .authorizationEndpoint(authorization -> 
+                        authorization.baseUri("/oauth2/authorization"))
+                    .redirectionEndpoint(redirection -> 
+                        redirection.baseUri("/login/oauth2/code/*"))
+                );
+            }
         }
         
         return httpSecurity.build();

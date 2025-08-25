@@ -31,7 +31,7 @@ public class OAuth2AuthenticationSuccessHandlerV2 implements AuthenticationSucce
     private final JwtService jwtService;
     private final OAuth2SessionService sessionService;
     
-    @Value("${app.oauth2.redirect-uri:https://movie-tracker-web-production.up.railway.app/auth/callback}")
+    @Value("${app.oauth2.redirect-uri:https://movie-tracker-web-production.up.railway.app/auth/callback-v2}")
     private String redirectUri;
 
     @Autowired

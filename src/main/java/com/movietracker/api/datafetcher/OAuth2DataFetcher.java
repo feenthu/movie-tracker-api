@@ -19,8 +19,11 @@ public class OAuth2DataFetcher {
     public OAuth2LoginUrl getOAuth2LoginUrl(@InputArgument OAuth2Provider provider) {
         String providerName = provider.name().toLowerCase();
         
-        // Use new secure OAuth2 flow endpoint with PKCE support
+        // IMMEDIATE FIX: Use new secure OAuth2 flow endpoint with PKCE support
+        // This bypasses Spring's problematic OAuth2 session management
         String loginUrl = apiBaseUrl + "/oauth2/authorize/" + providerName;
+        
+        System.out.println("OAuth2DataFetcher: Returning new PKCE endpoint: " + loginUrl);
         
         return new OAuth2LoginUrl(provider, loginUrl);
     }
