@@ -48,20 +48,29 @@ public class OAuth2AuthenticationSuccessHandlerV2 implements AuthenticationSucce
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                        Authentication authentication) throws IOException {
         
+        System.out.println("=== OAUTH2 SUCCESS HANDLER V2 CALLED ===");
+        System.out.println("Request URL: " + request.getRequestURL());
+        System.out.println("Query String: " + request.getQueryString());
+        System.out.println("All request parameters: " + request.getParameterMap().keySet());
+        
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        System.out.println("OAuth2User email: " + oAuth2User.getAttribute("email"));
         
         // Get registration ID from the OAuth2AuthenticationToken
         String registrationId = "unknown";
         if (authentication instanceof OAuth2AuthenticationToken) {
             OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
             registrationId = oauthToken.getAuthorizedClientRegistrationId();
+            System.out.println("Registration ID: " + registrationId);
         }
 
         try {
             // Get session ID from cookie
             String sessionId = getSessionIdFromCookies(request);
+            System.out.println("Session ID from cookies: " + sessionId);
             
             if (sessionId == null) {
+                System.out.println("No session cookie found, falling back to legacy flow");
                 // Fallback to old behavior for backward compatibility
                 handleLegacyFlow(request, response, oAuth2User, registrationId);
                 return;
@@ -69,12 +78,15 @@ public class OAuth2AuthenticationSuccessHandlerV2 implements AuthenticationSucce
 
             // Validate session exists and matches state
             OAuth2SessionService.OAuth2SessionData sessionData = sessionService.getSession(sessionId);
+            System.out.println("Session data found: " + (sessionData != null));
             if (sessionData == null) {
                 throw new IllegalStateException("Invalid or expired OAuth2 session");
             }
 
             // Verify state parameter for CSRF protection
             String stateParam = request.getParameter("state");
+            System.out.println("State from URL: " + stateParam);
+            System.out.println("State from session: " + sessionData.getState());
             if (!sessionData.getState().equals(stateParam)) {
                 throw new IllegalStateException("State parameter mismatch - possible CSRF attack");
             }

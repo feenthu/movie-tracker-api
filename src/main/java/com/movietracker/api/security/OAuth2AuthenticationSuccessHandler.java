@@ -43,6 +43,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                        Authentication authentication) throws IOException {
         
+        System.out.println("=== OAUTH2 SUCCESS HANDLER V1 (LEGACY) CALLED ===");
+        System.out.println("This means V2 handler is not being used or session cookie missing");
+        
         try {
             OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
             

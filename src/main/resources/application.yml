@@ -64,7 +64,7 @@ app:
       secret: ${JWT_SECRET:movieTracker2024SecretKeyThatIsLongEnoughForHS256Algorithm}
       expiration-hours: ${JWT_EXPIRATION_HOURS:1}
   oauth2:
-    redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:3001/auth/callback}
+    redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:3001/auth/callback-v2}
   api-base-url: ${API_BASE_URL:http://localhost:8081}
 
 # GraphQL configuration
