@@ -3,6 +3,7 @@ package com.movietracker.api.controller;
 import com.movietracker.api.service.OAuth2SessionService;
 import com.movietracker.api.service.PKCEService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +43,7 @@ public class OAuth2Controller {
     @GetMapping("/authorize/{provider}")
     public ResponseEntity<Map<String, String>> initiateOAuth2Flow(
             @PathVariable String provider, 
+            HttpServletRequest request,
             HttpServletResponse response) {
         
         System.out.println("=== NEW PKCE OAUTH2 FLOW INITIATED ===");
@@ -62,11 +64,11 @@ public class OAuth2Controller {
 
             // Set session cookie
             Cookie sessionCookie = new Cookie("oauth2-session", sessionId);
-            sessionCookie.setHttpOnly(false); // Allow JavaScript access for debugging
-            sessionCookie.setSecure(false); // Allow HTTP for Railway debugging
+            sessionCookie.setHttpOnly(true);
+            sessionCookie.setSecure(true); 
             sessionCookie.setPath("/");
             sessionCookie.setMaxAge(10 * 60); // 10 minutes
-            sessionCookie.setDomain(".railway.app"); // Cross-subdomain cookie
+            // Remove domain setting - let browser handle it automatically
             response.addCookie(sessionCookie);
 
             // Build OAuth2 authorization URL
@@ -79,8 +81,18 @@ public class OAuth2Controller {
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {
+            System.err.println("=== RAILWAY OAUTH2 ERROR ===");
+            System.err.println("Error: " + e.getMessage());
+            System.err.println("Provider: " + provider);
+            System.err.println("Request URL: " + request.getRequestURL());
+            System.err.println("User-Agent: " + request.getHeader("User-Agent"));
+            System.err.println("Host: " + request.getHeader("Host"));
+            e.printStackTrace();
+            
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to initiate OAuth2 flow: " + e.getMessage());
+            error.put("provider", provider);
+            error.put("timestamp", java.time.Instant.now().toString());
             return ResponseEntity.badRequest().body(error);
         }
     }
@@ -92,11 +104,21 @@ public class OAuth2Controller {
     @PostMapping("/session/exchange")
     public ResponseEntity<Map<String, Object>> exchangeSession(
             @CookieValue(value = "oauth2-session", required = false) String sessionId,
+            HttpServletRequest request,
             HttpServletResponse response) {
         
+        System.out.println("=== OAUTH2 SESSION EXCHANGE (RAILWAY) ===");
+        System.out.println("Session ID present: " + (sessionId != null));
+        System.out.println("Request URL: " + request.getRequestURL());
+        System.out.println("Host: " + request.getHeader("Host"));
+        System.out.println("Origin: " + request.getHeader("Origin"));
+        System.out.println("Cookies: " + java.util.Arrays.toString(request.getCookies()));
+        
         if (sessionId == null) {
+            System.err.println("Railway OAuth2 Error: No session cookie found");
             Map<String, Object> error = new HashMap<>();
-            error.put("error", "No session found");
+            error.put("error", "No session found - Railway cookie issue");
+            error.put("debug", "Check if oauth2-session cookie is being set correctly on Railway domain");
             return ResponseEntity.badRequest().body(error);
         }
 
@@ -104,8 +126,11 @@ public class OAuth2Controller {
         OAuth2SessionService.OAuth2SessionData sessionData = sessionService.exchangeSession(sessionId);
         
         if (sessionData == null) {
+            System.err.println("Railway OAuth2 Error: Invalid or expired session - sessionId: " + sessionId);
             Map<String, Object> error = new HashMap<>();
             error.put("error", "Invalid or expired session");
+            error.put("sessionId", sessionId);
+            error.put("debug", "Session may have expired (10 min timeout) or already been used");
             return ResponseEntity.badRequest().body(error);
         }
 
