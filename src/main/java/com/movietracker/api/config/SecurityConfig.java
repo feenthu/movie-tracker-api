@@ -85,9 +85,9 @@ public class SecurityConfig {
         
         // Only configure OAuth2 login if enabled and handlers are available
         if (oauth2Enabled && oAuth2AuthenticationFailureHandler != null) {
-            // Use V2 handler if available (with session management), fallback to V1 handler
-            var successHandler = oAuth2AuthenticationSuccessHandlerV2 != null ? 
-                oAuth2AuthenticationSuccessHandlerV2 : oAuth2AuthenticationSuccessHandler;
+            // TEMPORARY FIX: Force V1 handler for Railway deployment to avoid session issues
+            // V2 handler requires custom session management that doesn't work with Spring Security OAuth2
+            var successHandler = oAuth2AuthenticationSuccessHandler;
             
             if (successHandler != null) {
                 System.out.println("Configuring OAuth2 with handler: " + successHandler.getClass().getSimpleName());
