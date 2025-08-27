@@ -64,31 +64,22 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         // Generate JWT token
         String token = jwtService.generateToken(user);
         
-        // Create secure HTTP-only cookies for sensitive data
-        Cookie tokenCookie = new Cookie("auth-token", token);
-        tokenCookie.setHttpOnly(true);
-        tokenCookie.setSecure(true); // HTTPS only
-        tokenCookie.setPath("/");
-        tokenCookie.setMaxAge(24 * 60 * 60); // 24 hours
-        // Note: SameSite=Lax is set by browser default for secure cookies
-        
+        // RAILWAY FIX: Pass auth data via URL parameters instead of cookies
+        // Cross-domain cookies don't work between api.railway.app and web.railway.app subdomains
         String userJson = String.format("{\"id\":\"%s\",\"email\":\"%s\",\"username\":\"%s\"}", 
                 user.getId(), user.getEmail(), user.getUsername());
         String encodedUserJson = URLEncoder.encode(userJson, StandardCharsets.UTF_8);
+        String encodedToken = URLEncoder.encode(token, StandardCharsets.UTF_8);
         
-        Cookie userCookie = new Cookie("auth-user", encodedUserJson);
-        userCookie.setHttpOnly(false); // Frontend needs to read this
-        userCookie.setSecure(true); // HTTPS only
-        userCookie.setPath("/");
-        userCookie.setMaxAge(24 * 60 * 60); // 24 hours
-        // Note: SameSite=Lax is set by browser default for secure cookies
+        System.out.println("OAuth2 V1 Railway Fix: Passing auth data via URL parameters");
+        System.out.println("Token length: " + token.length());
+        System.out.println("User data: " + userJson);
         
-        response.addCookie(tokenCookie);
-        response.addCookie(userCookie);
-        
-        // Redirect to frontend callback without sensitive data in URL
+        // Redirect to frontend callback with auth data in URL parameters (Railway fix)
         String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
                 .queryParam("success", "true")
+                .queryParam("token", encodedToken)
+                .queryParam("user", encodedUserJson)
                 .build().toUriString();
         
         // Debug logging
@@ -98,8 +89,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         
         // Clear any existing response content and redirect
         response.reset();
-        response.addCookie(tokenCookie); // Re-add cookies after reset
-        response.addCookie(userCookie);
         response.setStatus(HttpServletResponse.SC_FOUND);
         response.setHeader("Location", targetUrl);
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
